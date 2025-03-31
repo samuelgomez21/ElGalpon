@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+
+{% block title %}Inicio{% endblock %}
+
+{% block content %}
+<section id="home" class="hero-section">
+    <div class="hero-content">
+        <h1 class="animate__animated animate__fadeInDown">Bienvenidos a El Galpón</h1>
+        <p class="animate__animated animate__fadeInUp">Tu tienda líder en medicamentos veterinarios y cuidado animal en Alcalá, Valle del Cauca.</p>
+        <a href="{% url 'products' %}" class="cta-button animate__animated animate__bounceIn">Ver Productos</a>
+    </div>
+</section>
+
+<section id="featured-products" class="section">
+    <h2>Productos Destacados</h2>
+    <div class="product-grid" id="featured-product-list"></div>
+</section>
+{% endblock %}
