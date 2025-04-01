@@ -55,13 +55,10 @@ let products = [];
 let cart = JSON.parse(localStorage.getItem('cart')) || [];
 
 function loadProducts() {
-    const productList = document.getElementById('product-list');
     const featuredProductList = document.getElementById('featured-product-list');
-    const targetList = productList || featuredProductList;
+    if (!featuredProductList) return;
 
-    if (!targetList) return;
-
-    targetList.innerHTML = '<p>Cargando productos...</p>';
+    featuredProductList.innerHTML = '<p>Cargando productos...</p>';
 
     fetch('/api/products/')
         .then(response => {
@@ -72,13 +69,10 @@ function loadProducts() {
         })
         .then(data => {
             products = data;
-            displayProducts(products, targetList);
-            if (featuredProductList) {
-                displayProducts(products.slice(0, 4), featuredProductList);
-            }
+            displayProducts(products.slice(0, 4), featuredProductList);
         })
         .catch(error => {
-            targetList.innerHTML = '<p>Error al cargar los productos. Por favor, intenta de nuevo más tarde.</p>';
+            featuredProductList.innerHTML = '<p>Error al cargar los productos destacados.</p>';
             console.error('Error al cargar productos:', error);
         });
 }
@@ -93,12 +87,13 @@ function displayProducts(productsToShow, targetList) {
     productsToShow.forEach(product => {
         const div = document.createElement('div');
         div.className = 'product animate__animated animate__fadeIn';
-        const imageUrl = product.image ? `${window.location.origin}${product.image}` : '/static/images/placeholder.jpg';
         div.innerHTML = `
-            <img src="${imageUrl}" alt="${product.name}" loading="lazy">
-            <h3>${product.name}</h3>
-            <p>${product.description}</p>
-            <p>Precio: $${product.price.toFixed(2)}</p>
+            <img src="/static/images/placeholder.jpg" alt="${product.nombre}" loading="lazy">
+            <h3>${product.nombre}</h3>
+            <p>${product.descripcion || 'Sin descripción'}</p>
+            <p>Categoría: ${product.categoria}</p>
+            <p>Especie: ${product.especie}</p>
+            <p>Precio: $${product.precio.toFixed(2)}</p>
             <button onclick="addToCart(${product.id})">Añadir al Carrito</button>
         `;
         targetList.appendChild(div);
@@ -106,12 +101,34 @@ function displayProducts(productsToShow, targetList) {
 }
 
 function addToCart(productId) {
-    const product = products.find(p => p.id === productId);
-    cart.push(product);
-    localStorage.setItem('cart', JSON.stringify(cart));
-    updateCartCount();
+    if (products.length === 0) {
+        fetch('/api/products/')
+            .then(response => response.json())
+            .then(data => {
+                products = data;
+                const product = products.find(p => p.id === productId);
+                if (product) {
+                    cart.push(product);
+                    localStorage.setItem('cart', JSON.stringify(cart));
+                    updateCartCount();
+                    animateAddToCart();
+                }
+            })
+            .catch(error => {
+                console.error('Error al cargar productos para el carrito:', error);
+            });
+    } else {
+        const product = products.find(p => p.id === productId);
+        if (product) {
+            cart.push(product);
+            localStorage.setItem('cart', JSON.stringify(cart));
+            updateCartCount();
+            animateAddToCart();
+        }
+    }
+}
 
-    // Animación de "volar al carrito"
+function animateAddToCart() {
     const cartIcon = document.getElementById('cart-count');
     const productElement = event.target.parentElement;
     const productImage = productElement.querySelector('img');
@@ -161,15 +178,14 @@ function displayCart() {
     cart.forEach((item, index) => {
         const div = document.createElement('div');
         div.className = 'product animate__animated animate__fadeIn';
-        const imageUrl = item.image ? `${window.location.origin}${item.image}` : '/static/images/placeholder.jpg';
         div.innerHTML = `
-            <img src="${imageUrl}" alt="${item.name}" loading="lazy">
-            <h3>${item.name}</h3>
-            <p>Precio: $${item.price.toFixed(2)}</p>
+            <img src="/static/images/placeholder.jpg" alt="${item.nombre}" loading="lazy">
+            <h3>${item.nombre}</h3>
+            <p>Precio: $${item.precio.toFixed(2)}</p>
             <button onclick="removeFromCart(${index})">Eliminar</button>
         `;
         cartItems.appendChild(div);
-        total += parseFloat(item.price);
+        total += parseFloat(item.precio);
     });
 
     cartTotal.textContent = `Total: $${total.toFixed(2)}`;
@@ -227,7 +243,7 @@ if (appointmentForm) {
     });
 }
 
-if (document.getElementById('product-list') || document.getElementById('featured-product-list')) {
+if (document.getElementById('featured-product-list')) {
     loadProducts();
 }
 

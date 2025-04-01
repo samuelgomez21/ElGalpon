@@ -17,5 +17,22 @@
         {{ form.as_p }}
         <button type="submit" class="cta-button">Agendar Cita</button>
     </form>
+
+    <h2>Tus Citas</h2>
+    {% if appointments %}
+    <ul>
+        {% for appointment in appointments %}
+        <li>
+            <strong>Cita para {{ appointment.cliente.nombre }}</strong><br>
+            Fecha: {{ appointment.fecha_hora }}<br>
+            Motivo: {{ appointment.motivo }}<br>
+            Estado: {{ appointment.get_estado_display }}<br>
+        </li>
+        <hr>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p>No tienes citas agendadas.</p>
+    {% endif %}
 </section>
 {% endblock %}

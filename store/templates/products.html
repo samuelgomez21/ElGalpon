@@ -6,6 +6,21 @@
 {% block content %}
 <section id="products" class="section">
     <h2>Nuestros Productos</h2>
-    <div id="product-list" class="product-grid"></div>
+    <div id="product-list" class="product-grid">
+        {% for product in products %}
+        <div class="product animate__animated animate__fadeIn">
+            <img src="/static/images/placeholder.jpg" alt="{{ product.nombre }}" loading="lazy">
+            <h3>{{ product.nombre }}</h3>
+            <p>{{ product.descripcion }}</p>
+            <p>Categoría: {{ product.get_categoria_display }}</p>
+            <p>Especie: {{ product.get_especie_display }}</p>
+            <p>Precio: ${{ product.precio }}</p>
+            <p>Stock: {{ product.stock }}</p>
+            <button onclick="addToCart({{ product.id }})">Añadir al Carrito</button>
+        </div>
+        {% empty %}
+        <p>No se encontraron productos.</p>
+        {% endfor %}
+    </div>
 </section>
 {% endblock %}
