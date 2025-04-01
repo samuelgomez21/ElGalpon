@@ -6,21 +6,239 @@
 {% block content %}
 <section id="products" class="section">
     <h2>Nuestros Productos</h2>
-    <div id="product-list" class="product-grid">
-        {% for product in products %}
+
+    <!-- Barra de búsqueda -->
+    <div class="search-bar">
+        <input type="text" id="search-input" placeholder="Buscar productos..." value="{{ search_query }}">
+    </div>
+
+    <!-- Filtros y ordenación -->
+    <div class="filters">
+        <select id="categoria-filter">
+            <option value="">Todas las categorías</option>
+            {% for categoria in categorias %}
+            <option value="{{ categoria.0 }}" {% if selected_categoria == categoria.0 %}selected{% endif %}>
+                {{ categoria.1 }}
+            </option>
+            {% endfor %}
+        </select>
+        <select id="especie-filter">
+            <option value="">Todas las especies</option>
+            {% for especie in especies %}
+            <option value="{{ especie.0 }}" {% if selected_especie == especie.0 %}selected{% endif %}>
+                {{ especie.1 }}
+            </option>
+            {% endfor %}
+        </select>
+        <select id="sort-filter">
+            <option value="">Ordenar por...</option>
+            <option value="price_asc" {% if selected_sort == 'price_asc' %}selected{% endif %}>Precio: Menor a Mayor</option>
+            <option value="price_desc" {% if selected_sort == 'price_desc' %}selected{% endif %}>Precio: Mayor a Menor</option>
+        </select>
+    </div>
+
+    <!-- Sección Ganadería -->
+    <h3>Ganadería</h3>
+    <div class="product-grid">
+        {% for product in ganaderia %}
         <div class="product animate__animated animate__fadeIn">
-            <img src="/static/images/placeholder.jpg" alt="{{ product.nombre }}" loading="lazy">
-            <h3>{{ product.nombre }}</h3>
+            <button class="favorite-button" id="favorite-{{ product.id }}" onclick="toggleFavorite({{ product.id }})">❤️</button>
+            <button class="share-button" onclick="shareProduct('{{ product.nombre }}', '{{ request.build_absolute_uri }}')">↗</button>
+            <img src="{% if product.imagen %}{{ product.imagen.url }}{% else %}/static/images/placeholder.jpg{% endif %}" alt="{{ product.nombre }}" loading="lazy" onclick="openQuickView({{ product.id }})">
+            <h4>{{ product.nombre }}</h4>
             <p>{{ product.descripcion }}</p>
             <p>Categoría: {{ product.get_categoria_display }}</p>
             <p>Especie: {{ product.get_especie_display }}</p>
             <p>Precio: ${{ product.precio }}</p>
             <p>Stock: {{ product.stock }}</p>
             <button onclick="addToCart({{ product.id }})">Añadir al Carrito</button>
+            <!-- Sección de reseñas -->
+            <div class="reviews" id="reviews-{{ product.id }}">
+                <!-- Las reseñas se añadirán dinámicamente con JavaScript -->
+            </div>
+            <div class="review-form">
+                <h5>Deja tu reseña</h5>
+                <select id="rating-{{ product.id }}">
+                    <option value="">Calificación</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                </select>
+                <textarea id="comment-{{ product.id }}" placeholder="Escribe tu comentario..."></textarea>
+                <button onclick="submitReview({{ product.id }})">Enviar Reseña</button>
+            </div>
         </div>
         {% empty %}
-        <p>No se encontraron productos.</p>
+        <p>No se encontraron productos para Ganadería.</p>
         {% endfor %}
     </div>
+    <!-- Paginación para Ganadería -->
+    <div class="pagination">
+        {% if page_ganaderia.has_previous %}
+        <a href="?page={{ page_ganaderia.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_categoria %}&categoria={{ selected_categoria }}{% endif %}{% if selected_especie %}&especie={{ selected_especie }}{% endif %}{% if selected_sort %}&sort={{ selected_sort }}{% endif %}" class="pagination-link">Anterior</a>
+        {% endif %}
+        <span>Página {{ page_ganaderia.number }} de {{ page_ganaderia.paginator.num_pages }}</span>
+        {% if page_ganaderia.has_next %}
+        <a href="?page={{ page_ganaderia.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_categoria %}&categoria={{ selected_categoria }}{% endif %}{% if selected_especie %}&especie={{ selected_especie }}{% endif %}{% if selected_sort %}&sort={{ selected_sort }}{% endif %}" class="pagination-link">Siguiente</a>
+        {% endif %}
+    </div>
+
+    <!-- Sección Porcicultura -->
+    <h3>Porcicultura</h3>
+    <div class="product-grid">
+        {% for product in porcicultura %}
+        <div class="product animate__animated animate__fadeIn">
+            <button class="favorite-button" id="favorite-{{ product.id }}" onclick="toggleFavorite({{ product.id }})">❤️</button>
+            <button class="share-button" onclick="shareProduct('{{ product.nombre }}', '{{ request.build_absolute_uri }}')">↗</button>
+            <img src="{% if product.imagen %}{{ product.imagen.url }}{% else %}/static/images/placeholder.jpg{% endif %}" alt="{{ product.nombre }}" loading="lazy" onclick="openQuickView({{ product.id }})">
+            <h4>{{ product.nombre }}</h4>
+            <p>{{ product.descripcion }}</p>
+            <p>Categoría: {{ product.get_categoria_display }}</p>
+            <p>Especie: {{ product.get_especie_display }}</p>
+            <p>Precio: ${{ product.precio }}</p>
+            <p>Stock: {{ product.stock }}</p>
+            <button onclick="addToCart({{ product.id }})">Añadir al Carrito</button>
+            <!-- Sección de reseñas -->
+            <div class="reviews" id="reviews-{{ product.id }}">
+                <!-- Las reseñas se añadirán dinámicamente con JavaScript -->
+            </div>
+            <div class="review-form">
+                <h5>Deja tu reseña</h5>
+                <select id="rating-{{ product.id }}">
+                    <option value="">Calificación</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                </select>
+                <textarea id="comment-{{ product.id }}" placeholder="Escribe tu comentario..."></textarea>
+               <!-- Continuación desde el botón de "Enviar Reseña" en Porcicultura -->
+                <button onclick="submitReview({{ product.id }})">Enviar Reseña</button>
+            </div>
+        </div>
+        {% empty %}
+        <p>No se encontraron productos para Porcicultura.</p>
+        {% endfor %}
+    </div>
+    <!-- Paginación para Porcicultura -->
+    <div class="pagination">
+        {% if page_porcicultura.has_previous %}
+        <a href="?page={{ page_porcicultura.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_categoria %}&categoria={{ selected_categoria }}{% endif %}{% if selected_especie %}&especie={{ selected_especie }}{% endif %}{% if selected_sort %}&sort={{ selected_sort }}{% endif %}" class="pagination-link">Anterior</a>
+        {% endif %}
+        <span>Página {{ page_porcicultura.number }} de {{ page_porcicultura.paginator.num_pages }}</span>
+        {% if page_porcicultura.has_next %}
+        <a href="?page={{ page_porcicultura.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_categoria %}&categoria={{ selected_categoria }}{% endif %}{% if selected_especie %}&especie={{ selected_especie }}{% endif %}{% if selected_sort %}&sort={{ selected_sort }}{% endif %}" class="pagination-link">Siguiente</a>
+        {% endif %}
+    </div>
+
+    <!-- Sección Avicultura -->
+    <h3>Avicultura</h3>
+    <div class="product-grid">
+        {% for product in avicultura %}
+        <div class="product animate__animated animate__fadeIn">
+            <button class="favorite-button" id="favorite-{{ product.id }}" onclick="toggleFavorite({{ product.id }})">❤️</button>
+            <button class="share-button" onclick="shareProduct('{{ product.nombre }}', '{{ request.build_absolute_uri }}')">↗</button>
+            <img src="{% if product.imagen %}{{ product.imagen.url }}{% else %}/static/images/placeholder.jpg{% endif %}" alt="{{ product.nombre }}" loading="lazy" onclick="openQuickView({{ product.id }})">
+            <h4>{{ product.nombre }}</h4>
+            <p>{{ product.descripcion }}</p>
+            <p>Categoría: {{ product.get_categoria_display }}</p>
+            <p>Especie: {{ product.get_especie_display }}</p>
+            <p>Precio: ${{ product.precio }}</p>
+            <p>Stock: {{ product.stock }}</p>
+            <button onclick="addToCart({{ product.id }})">Añadir al Carrito</button>
+            <!-- Sección de reseñas -->
+            <div class="reviews" id="reviews-{{ product.id }}">
+                <!-- Las reseñas se añadirán dinámicamente con JavaScript -->
+            </div>
+            <div class="review-form">
+                <h5>Deja tu reseña</h5>
+                <select id="rating-{{ product.id }}">
+                    <option value="">Calificación</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                </select>
+                <textarea id="comment-{{ product.id }}" placeholder="Escribe tu comentario..."></textarea>
+                <button onclick="submitReview({{ product.id }})">Enviar Reseña</button>
+            </div>
+        </div>
+        {% empty %}
+        <p>No se encontraron productos para Avicultura.</p>
+        {% endfor %}
+    </div>
+    <!-- Paginación para Avicultura -->
+    <div class="pagination">
+        {% if page_avicultura.has_previous %}
+        <a href="?page={{ page_avicultura.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_categoria %}&categoria={{ selected_categoria }}{% endif %}{% if selected_especie %}&especie={{ selected_especie }}{% endif %}{% if selected_sort %}&sort={{ selected_sort }}{% endif %}" class="pagination-link">Anterior</a>
+        {% endif %}
+        <span>Página {{ page_avicultura.number }} de {{ page_avicultura.paginator.num_pages }}</span>
+        {% if page_avicultura.has_next %}
+        <a href="?page={{ page_avicultura.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_categoria %}&categoria={{ selected_categoria }}{% endif %}{% if selected_especie %}&especie={{ selected_especie }}{% endif %}{% if selected_sort %}&sort={{ selected_sort }}{% endif %}" class="pagination-link">Siguiente</a>
+        {% endif %}
+    </div>
+
+    <!-- Sección Mascotas -->
+    <h3>Mascotas</h3>
+    <div class="product-grid">
+        {% for product in mascotas %}
+        <div class="product animate__animated animate__fadeIn">
+            <button class="favorite-button" id="favorite-{{ product.id }}" onclick="toggleFavorite({{ product.id }})">❤️</button>
+            <button class="share-button" onclick="shareProduct('{{ product.nombre }}', '{{ request.build_absolute_uri }}')">↗</button>
+            <img src="{% if product.imagen %}{{ product.imagen.url }}{% else %}/static/images/placeholder.jpg{% endif %}" alt="{{ product.nombre }}" loading="lazy" onclick="openQuickView({{ product.id }})">
+            <h4>{{ product.nombre }}</h4>
+            <p>{{ product.descripcion }}</p>
+            <p>Categoría: {{ product.get_categoria_display }}</p>
+            <p>Especie: {{ product.get_especie_display }}</p>
+            <p>Precio: ${{ product.precio }}</p>
+            <p>Stock: {{ product.stock }}</p>
+            <button onclick="addToCart({{ product.id }})">Añadir al Carrito</button>
+            <!-- Sección de reseñas -->
+            <div class="reviews" id="reviews-{{ product.id }}">
+                <!-- Las reseñas se añadirán dinámicamente con JavaScript -->
+            </div>
+            <div class="review-form">
+                <h5>Deja tu reseña</h5>
+                <select id="rating-{{ product.id }}">
+                    <option value="">Calificación</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                </select>
+                <textarea id="comment-{{ product.id }}" placeholder="Escribe tu comentario..."></textarea>
+                <button onclick="submitReview({{ product.id }})">Enviar Reseña</button>
+            </div>
+        </div>
+        {% empty %}
+        <p>No se encontraron productos para Mascotas.</p>
+        {% endfor %}
+    </div>
+    <!-- Paginación para Mascotas -->
+    <div class="pagination">
+        {% if page_mascotas.has_previous %}
+        <a href="?page={{ page_mascotas.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_categoria %}&categoria={{ selected_categoria }}{% endif %}{% if selected_especie %}&especie={{ selected_especie }}{% endif %}{% if selected_sort %}&sort={{ selected_sort }}{% endif %}" class="pagination-link">Anterior</a>
+        {% endif %}
+        <span>Página {{ page_mascotas.number }} de {{ page_mascotas.paginator.num_pages }}</span>
+        {% if page_mascotas.has_next %}
+        <a href="?page={{ page_mascotas.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_categoria %}&categoria={{ selected_categoria }}{% endif %}{% if selected_especie %}&especie={{ selected_especie }}{% endif %}{% if selected_sort %}&sort={{ selected_sort }}{% endif %}" class="pagination-link">Siguiente</a>
+        {% endif %}
+    </div>
 </section>
+
+<!-- Modal de vista rápida -->
+<div id="quick-view-modal" class="modal">
+    <div class="modal-content">
+        <span class="close-modal" onclick="closeQuickView()">×</span>
+        <div id="quick-view-content"></div>
+    </div>
+</div>
+
+<!-- Contenedor para notificaciones -->
+<div id="toast-container"></div>
 {% endblock %}

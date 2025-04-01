@@ -7,6 +7,7 @@ class ProductoAdmin(admin.ModelAdmin):
     list_display = ('nombre', 'categoria', 'especie', 'precio', 'stock', 'fecha_ingreso')
     list_filter = ('categoria', 'especie')
     search_fields = ('nombre', 'descripcion')
+    fields = ('nombre', 'categoria', 'especie', 'precio', 'stock', 'descripcion', 'imagen')
 
 @admin.register(CitaVeterinaria)
 class CitaVeterinariaAdmin(admin.ModelAdmin):

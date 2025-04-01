@@ -1,19 +1,56 @@
 <!-- store/templates/index.html -->
 {% extends 'base.html' %}
 
-{% block title %}Inicio{% endblock %}
+{% block title %}El Galpón{% endblock %}
 
 {% block content %}
-<section id="home" class="hero-section">
+<section id="hero">
+    <div class="carousel">
+        <div class="carousel-slide"></div>
+        <div class="carousel-slide"></div>
+        <div class="carousel-slide"></div>
+        <button id="prev-slide" class="carousel-button">❮</button>
+        <button id="next-slide" class="carousel-button">❯</button>
+    </div>
+    <div id="particles-js"></div>
     <div class="hero-content">
         <h1 class="animate__animated animate__fadeInDown">Bienvenidos a El Galpón</h1>
-        <p class="animate__animated animate__fadeInUp">Tu tienda líder en medicamentos veterinarios y cuidado animal en Alcalá, Valle del Cauca.</p>
-        <a href="{% url 'products' %}" class="cta-button animate__animated animate__bounceIn">Ver Productos</a>
+        <p class="animate__animated animate__fadeInUp">Tu tienda de confianza para el cuidado de animales en Alcalá, Valle del Cauca.</p>
+        <a href="{% url 'products' %}" class="cta-button animate__animated animate__fadeInUp">Explorar Productos</a>
     </div>
 </section>
 
-<section id="featured-products" class="section">
+<!-- Sección de Productos Destacados -->
+<section class="section">
     <h2>Productos Destacados</h2>
-    <div class="product-grid" id="featured-product-list"></div>
+    <div class="product-grid">
+        {% for product in productos_destacados %}
+        <div class="product animate__animated animate__fadeIn">
+            <button class="favorite-button" id="favorite-{{ product.id }}" onclick="toggleFavorite({{ product.id }})">❤️</button>
+            <button class="share-button" onclick="shareProduct('{{ product.nombre }}', '{{ request.build_absolute_uri }}')">↗</button>
+            <img src="{% if product.imagen %}{{ product.imagen.url }}{% else %}/static/images/placeholder.jpg{% endif %}" alt="{{ product.nombre }}" loading="lazy" onclick="openQuickView({{ product.id }})">
+            <h4>{{ product.nombre }}</h4>
+            <p>{{ product.descripcion }}</p>
+            <p>Categoría: {{ product.get_categoria_display }}</p>
+            <p>Especie: {{ product.get_especie_display }}</p>
+            <p>Precio: ${{ product.precio }}</p>
+            <p>Stock: {{ product.stock }}</p>
+            <button onclick="addToCart({{ product.id }})">Añadir al Carrito</button>
+        </div>
+        {% empty %}
+        <p>No hay productos destacados disponibles.</p>
+        {% endfor %}
+    </div>
 </section>
+
+<!-- Modal de vista rápida -->
+<div id="quick-view-modal" class="modal">
+    <div class="modal-content">
+        <span class="close-modal" onclick="closeQuickView()">×</span>
+        <div id="quick-view-content"></div>
+    </div>
+</div>
+
+<!-- Contenedor para notificaciones -->
+<div id="toast-container"></div>
 {% endblock %}

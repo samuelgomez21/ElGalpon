@@ -1,57 +1,65 @@
 <!-- store/templates/base.html -->
+{% load static %}
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>El Galpón - {% block title %}{% endblock %}</title>
-    <link rel="stylesheet" href="/static/css/styles.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+    <title>{% block title %}El Galpón{% endblock %}</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
 </head>
 <body>
-    <div id="particles-js" class="particles"></div>
-    <div id="loader" class="loader">
-        <div class="spinner"></div>
-    </div>
-
+    <div id="loader" class="loader"></div>
     <header>
-        <div class="logo">El Galpón</div>
         <nav>
-            <a href="{% url 'index' %}">Inicio</a>
-            <a href="{% url 'products' %}">Productos</a>
-            <a href="{% url 'cart' %}">Carrito <span id="cart-count">0</span></a>
-            <a href="{% url 'appointments' %}">Citas</a>
-            <a href="{% url 'about' %}">Sobre Nosotros</a>
-            <a href="{% url 'contact' %}">Contacto</a>
+            <div class="nav-left">
+                <a href="{% url 'index' %}" class="logo">El Galpón</a>
+            </div>
+            <div class="nav-right">
+                <a href="{% url 'index' %}">Inicio</a>
+                <a href="{% url 'products' %}">Productos</a>
+                <a href="{% url 'cart' %}">Carrito (<span id="cart-count">0</span>)</a>
+                <a href="{% url 'appointments' %}">Citas</a>
+                <a href="{% url 'about' %}">Sobre Nosotros</a>
+                <a href="{% url 'contact' %}">Contacto</a>
+                <label class="switch">
+                    <input type="checkbox" id="theme-switch">
+                    <span class="slider"></span>
+                </label>
+            </div>
         </nav>
-        <div class="theme-toggle">
-            <input type="checkbox" id="theme-switch">
-            <label for="theme-switch">🌙</label>
-        </div>
     </header>
-
-    {% block content %}
-    {% endblock %}
-
+    <main>
+        {% block content %}
+        {% endblock %}
+    </main>
     <footer>
-        <div class="footer-content">
-            <div class="footer-section">
-                <h3>El Galpón</h3>
-                <p>Una empresa familiar con 20 años de trayectoria, fundada como "Vamos para el Campo". Gracias al esfuerzo y dedicación, hoy somos líderes en medicamentos veterinarios y cuidado animal.</p>
-            </div>
-            <div class="footer-section">
-                <h3>Contáctanos</h3>
-                <p>Email: elgalpon@contacto.com</p>
-                <p>Teléfono: +57 317 880 8032</p>
-                <p>Dirección: Calle 5 #4-33, Alcalá, Valle del Cauca, Colombia</p>
-                <div id="map" style="height: 200px; width: 100%;"></div>
+        <p>© 2025 El Galpón. Todos los derechos reservados.</p>
+        <p>📍 Alcalá, Valle del Cauca, Colombia</p>
+        <p>📞 +57 312 345 6789 | 📧 contacto@elgalpon.com</p>
+        <div class="social-links">
+            <a href="https://facebook.com" target="_blank" class="social-icon">📘</a>
+            <a href="https://instagram.com" target="_blank" class="social-icon">📷</a>
+            <a href="https://twitter.com" target="_blank" class="social-icon">🐦</a>
+            <a href="https://whatsapp.com" target="_blank" class="social-icon">💬</a>
+        </div>
+    </footer>
+    <button id="back-to-top">⬆</button>
+    <div class="chatbot-container">
+        <button class="chatbot-button" onclick="toggleChatbot()">💬</button>
+        <div class="chatbot-window" id="chatbot-window">
+            <div class="chatbot-header">Asistente Virtual</div>
+            <div class="chatbot-body" id="chatbot-body"></div>
+            <div class="chatbot-footer">
+                <input type="text" id="chatbot-input" placeholder="Escribe tu mensaje..." onkeypress="if(event.key === 'Enter') sendMessage()">
+                <button onclick="sendMessage()">Enviar</button>
             </div>
         </div>
-        <p class="footer-bottom">© 2025 El Galpón. Todos los derechos reservados.</p>
-    </footer>
-
-    <script src="/static/js/main.js"></script>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
     <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&callback=initMap" async defer></script>
+    <script src="{% static 'js/main.js' %}"></script>
 </body>
 </html>

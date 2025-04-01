@@ -60,6 +60,7 @@ class Producto(models.Model):
     stock = models.IntegerField()
     descripcion = models.TextField(null=True, blank=True)
     fecha_ingreso = models.DateTimeField(auto_now_add=True)
+    imagen = models.ImageField(upload_to='productos/', null=True, blank=True)
 
     def __str__(self):
         return self.nombre
