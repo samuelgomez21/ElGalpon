@@ -66,7 +66,7 @@ function loadProducts() {
     fetch('/api/products/')
         .then(response => {
             if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
+                throw new Error(`HTTP error! status: ${response.status} - ${response.statusText}`);
             }
             return response.json();
         })
@@ -74,12 +74,12 @@ function loadProducts() {
             products = data;
             displayProducts(products, targetList);
             if (featuredProductList) {
-                displayProducts(products.slice(0, 4), featuredProductList); // Mostrar solo 4 productos destacados
+                displayProducts(products.slice(0, 4), featuredProductList);
             }
         })
         .catch(error => {
-            targetList.innerHTML = '<p>Error al cargar los productos.</p>';
-            console.error('Error:', error);
+            targetList.innerHTML = '<p>Error al cargar los productos. Por favor, intenta de nuevo más tarde.</p>';
+            console.error('Error al cargar productos:', error);
         });
 }
 
@@ -145,7 +145,6 @@ function updateCartCount() {
     cartCount.textContent = cart.length;
 }
 
-// Mostrar productos en el carrito
 function displayCart() {
     const cartItems = document.getElementById('cart-items');
     const cartTotal = document.getElementById('cart-total');
@@ -176,7 +175,6 @@ function displayCart() {
     cartTotal.textContent = `Total: $${total.toFixed(2)}`;
 }
 
-// Eliminar producto del carrito
 function removeFromCart(index) {
     cart.splice(index, 1);
     localStorage.setItem('cart', JSON.stringify(cart));
@@ -184,7 +182,6 @@ function removeFromCart(index) {
     displayCart();
 }
 
-// Vaciar carrito
 function clearCart() {
     cart = [];
     localStorage.setItem('cart', JSON.stringify(cart));
@@ -192,7 +189,6 @@ function clearCart() {
     displayCart();
 }
 
-// Manejo del formulario de citas con AJAX
 const appointmentForm = document.getElementById('appointment-form');
 if (appointmentForm) {
     appointmentForm.addEventListener('submit', (e) => {
@@ -231,7 +227,6 @@ if (appointmentForm) {
     });
 }
 
-// Cargar productos y carrito al iniciar
 if (document.getElementById('product-list') || document.getElementById('featured-product-list')) {
     loadProducts();
 }
