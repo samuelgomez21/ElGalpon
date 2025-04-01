@@ -1,3 +1,4 @@
+/* static/css/styles.css */
 * {
     margin: 0;
     padding: 0;
@@ -231,6 +232,58 @@ body.dark-mode .product p {
     transform: scale(1.05);
 }
 
+.appointment-form {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+body.dark-mode .appointment-form {
+    background-color: #2a2a2a;
+}
+
+.appointment-form label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+.appointment-form input,
+.appointment-form textarea {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 15px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+body.dark-mode .appointment-form input,
+body.dark-mode .appointment-form textarea {
+    background-color: #333;
+    color: #e5e5e5;
+    border-color: #555;
+}
+
+.cta-button {
+    background: #A9CBA4;
+    color: white;
+    padding: 1rem 2rem;
+    border-radius: 25px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: background 0.3s ease, transform 0.3s ease;
+    border: none;
+    cursor: pointer;
+}
+
+.cta-button:hover {
+    background: #6B8E6B;
+    transform: scale(1.1);
+}
+
 footer {
     background: #2F4F2F;
     color: white;
@@ -264,21 +317,6 @@ body.dark-mode footer {
 .footer-bottom {
     font-size: 0.8rem;
     opacity: 0.8;
-}
-
-.cta-button {
-    background: #A9CBA4;
-    color: white;
-    padding: 1rem 2rem;
-    border-radius: 25px;
-    text-decoration: none;
-    font-weight: 600;
-    transition: background 0.3s ease, transform 0.3s ease;
-}
-
-.cta-button:hover {
-    background: #6B8E6B;
-    transform: scale(1.1);
 }
 
 @media (max-width: 768px) {

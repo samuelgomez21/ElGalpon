@@ -1,3 +1,4 @@
+// static/js/main.js
 document.addEventListener('DOMContentLoaded', () => {
     const loader = document.getElementById('loader');
     if (loader) {
@@ -92,8 +93,9 @@ function displayProducts(productsToShow, targetList) {
     productsToShow.forEach(product => {
         const div = document.createElement('div');
         div.className = 'product animate__animated animate__fadeIn';
+        const imageUrl = product.image ? `${window.location.origin}${product.image}` : '/static/images/placeholder.jpg';
         div.innerHTML = `
-            <img src="${product.image || '/static/images/placeholder.jpg'}" alt="${product.name}" loading="lazy">
+            <img src="${imageUrl}" alt="${product.name}" loading="lazy">
             <h3>${product.name}</h3>
             <p>${product.description}</p>
             <p>Precio: $${product.price.toFixed(2)}</p>
@@ -143,8 +145,104 @@ function updateCartCount() {
     cartCount.textContent = cart.length;
 }
 
+// Mostrar productos en el carrito
+function displayCart() {
+    const cartItems = document.getElementById('cart-items');
+    const cartTotal = document.getElementById('cart-total');
+    if (!cartItems || !cartTotal) return;
+
+    cartItems.innerHTML = '';
+    if (cart.length === 0) {
+        cartItems.innerHTML = '<p>Tu carrito está vacío.</p>';
+        cartTotal.textContent = '';
+        return;
+    }
+
+    let total = 0;
+    cart.forEach((item, index) => {
+        const div = document.createElement('div');
+        div.className = 'product animate__animated animate__fadeIn';
+        const imageUrl = item.image ? `${window.location.origin}${item.image}` : '/static/images/placeholder.jpg';
+        div.innerHTML = `
+            <img src="${imageUrl}" alt="${item.name}" loading="lazy">
+            <h3>${item.name}</h3>
+            <p>Precio: $${item.price.toFixed(2)}</p>
+            <button onclick="removeFromCart(${index})">Eliminar</button>
+        `;
+        cartItems.appendChild(div);
+        total += parseFloat(item.price);
+    });
+
+    cartTotal.textContent = `Total: $${total.toFixed(2)}`;
+}
+
+// Eliminar producto del carrito
+function removeFromCart(index) {
+    cart.splice(index, 1);
+    localStorage.setItem('cart', JSON.stringify(cart));
+    updateCartCount();
+    displayCart();
+}
+
+// Vaciar carrito
+function clearCart() {
+    cart = [];
+    localStorage.setItem('cart', JSON.stringify(cart));
+    updateCartCount();
+    displayCart();
+}
+
+// Manejo del formulario de citas con AJAX
+const appointmentForm = document.getElementById('appointment-form');
+if (appointmentForm) {
+    appointmentForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+
+        const formData = new FormData(appointmentForm);
+        fetch(appointmentForm.action, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': formData.get('csrfmiddlewaretoken'),
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const successMessage = document.createElement('p');
+                successMessage.style.color = 'green';
+                successMessage.textContent = '¡Cita agendada con éxito! Te contactaremos pronto.';
+                appointmentForm.parentElement.insertBefore(successMessage, appointmentForm);
+                appointmentForm.reset();
+            } else {
+                const errorMessage = document.createElement('p');
+                errorMessage.style.color = 'red';
+                errorMessage.textContent = 'Hubo un error al agendar la cita. Por favor, revisa los datos.';
+                appointmentForm.parentElement.insertBefore(errorMessage, appointmentForm);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            const errorMessage = document.createElement('p');
+            errorMessage.style.color = 'red';
+            errorMessage.textContent = 'Error al procesar la solicitud. Intenta de nuevo.';
+            appointmentForm.parentElement.insertBefore(errorMessage, appointmentForm);
+        });
+    });
+}
+
+// Cargar productos y carrito al iniciar
 if (document.getElementById('product-list') || document.getElementById('featured-product-list')) {
     loadProducts();
+}
+
+if (document.getElementById('cart-items')) {
+    displayCart();
+}
+
+const clearCartButton = document.getElementById('clear-cart');
+if (clearCartButton) {
+    clearCartButton.addEventListener('click', clearCart);
 }
 
 updateCartCount();

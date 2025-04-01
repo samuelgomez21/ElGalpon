@@ -1,3 +1,4 @@
+# store/urls.py
 from django.urls import path, include
 from . import views
 from rest_framework import routers
@@ -18,11 +19,11 @@ app_urlpatterns = [
 
 # Rutas para la API
 api_urlpatterns = [
-    path('', include(router.urls)),  # Esto manejará las rutas de la API, como /api/products/
+    path('', include(router.urls)),
 ]
 
 # Combinar todas las rutas
 urlpatterns = [
-    path('', include(app_urlpatterns)),  # Rutas de la aplicación (HTML)
-    path('api/', include(api_urlpatterns)),  # Rutas de la API
+    path('', include(app_urlpatterns)),
+    path('api/', include(api_urlpatterns)),
 ]

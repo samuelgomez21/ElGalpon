@@ -4,7 +4,17 @@
 
 {% block content %}
 <section class="section">
-    <h2>Citas</h2>
-    <p>Programa una cita con nosotros.</p>
+    <h2>Programa una Cita</h2>
+    <p>Completa el formulario para agendar una cita con nosotros.</p>
+
+    {% if success %}
+    <p style="color: green;">¡Cita agendada con éxito! Te contactaremos pronto.</p>
+    {% endif %}
+
+    <form method="POST" id="appointment-form" class="appointment-form">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="cta-button">Agendar Cita</button>
+    </form>
 </section>
 {% endblock %}
