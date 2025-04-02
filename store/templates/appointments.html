@@ -1,38 +1,24 @@
 <!-- store/templates/appointments.html -->
 {% extends 'base.html' %}
-
-{% block title %}Citas{% endblock %}
-
+{% block title %}Citas - El Galpón{% endblock %}
 {% block content %}
 <section class="section">
-    <h2>Programa una Cita</h2>
-    <p>Completa el formulario para agendar una cita con nosotros.</p>
-
-    {% if success %}
-    <p style="color: green;">¡Cita agendada con éxito! Te contactaremos pronto.</p>
-    {% endif %}
-
-    <form method="POST" id="appointment-form" class="appointment-form">
+    <h2>Programa tu Cita</h2>
+    <form method="POST" class="appointment-form">
         {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit" class="cta-button">Agendar Cita</button>
+        <label for="name">Nombre:</label>
+        <input type="text" id="name" name="name" required>
+        <label for="email">Correo Electrónico:</label>
+        <input type="email" id="email" name="email" required>
+        <label for="phone">Teléfono:</label>
+        <input type="text" id="phone" name="phone">
+        <label for="date">Fecha:</label>
+        <input type="date" id="date" name="date" required>
+        <label for="time">Hora:</label>
+        <input type="time" id="time" name="time" required>
+        <label for="message">Mensaje:</label>
+        <textarea id="message" name="message" placeholder="Detalles adicionales"></textarea>
+        <button type="submit">Enviar Cita</button>
     </form>
-
-    <h2>Tus Citas</h2>
-    {% if appointments %}
-    <ul>
-        {% for appointment in appointments %}
-        <li>
-            <strong>Cita para {{ appointment.cliente.nombre }}</strong><br>
-            Fecha: {{ appointment.fecha_hora }}<br>
-            Motivo: {{ appointment.motivo }}<br>
-            Estado: {{ appointment.get_estado_display }}<br>
-        </li>
-        <hr>
-        {% endfor %}
-    </ul>
-    {% else %}
-    <p>No tienes citas agendadas.</p>
-    {% endif %}
 </section>
 {% endblock %}

@@ -1,4 +1,4 @@
-// static/js/main.js (actualizado con Intersection Observer)
+// static/js/main.js
 
 // Loader
 window.addEventListener('load', () => {
@@ -10,27 +10,6 @@ window.addEventListener('load', () => {
 document.getElementById('theme-switch').addEventListener('change', () => {
     document.body.classList.toggle('dark-mode');
 });
-
-// Particles.js for Hero Section
-if (document.getElementById('particles-js')) {
-    particlesJS('particles-js', {
-        particles: {
-            number: { value: 80, density: { enable: true, value_area: 800 } },
-            color: { value: '#A9CBA4' },
-            shape: { type: 'circle' },
-            opacity: { value: 0.5, random: false },
-            size: { value: 3, random: true },
-            line_linked: { enable: true, distance: 150, color: '#A9CBA4', opacity: 0.4, width: 1 },
-            move: { enable: true, speed: 6, direction: 'none', random: false, straight: false, out_mode: 'out', bounce: false }
-        },
-        interactivity: {
-            detect_on: 'canvas',
-            events: { onhover: { enable: true, mode: 'repulse' }, onclick: { enable: true, mode: 'push' }, resize: true },
-            modes: { repulse: { distance: 100, duration: 0.4 }, push: { particles_nb: 4 } }
-        },
-        retina_detect: true
-    });
-}
 
 // Google Maps for Contact Page
 function initMap() {
@@ -52,6 +31,13 @@ function initMap() {
 let cart = JSON.parse(localStorage.getItem('cart')) || [];
 updateCartCount();
 
+function updateCartCount() {
+    const cartCount = document.getElementById('cart-count');
+    if (cartCount) {
+        cartCount.textContent = cart.length;
+    }
+}
+
 function addToCart(productId) {
     cart.push(productId);
     localStorage.setItem('cart', JSON.stringify(cart));
@@ -59,174 +45,50 @@ function addToCart(productId) {
     showToast('Producto añadido al carrito', 'success');
 }
 
-function updateCartCount() {
-    const cartCount = document.getElementById('cart-count');
-    cartCount.textContent = cart.length;
-}
+// Carrito - Mostrar productos
+function displayCart() {
+    const cartItems = document.getElementById('cart-items');
+    const cartTotal = document.getElementById('cart-total');
+    if (!cartItems || !cartTotal) return;
 
-// Favoritos
-let favorites = JSON.parse(localStorage.getItem('favorites')) || [];
+    cartItems.innerHTML = '';
+    let total = 0;
 
-function toggleFavorite(productId) {
-    const button = document.getElementById(`favorite-${productId}`);
-    if (favorites.includes(productId)) {
-        favorites = favorites.filter(id => id !== productId);
-        button.classList.remove('favorited');
-        showToast('Producto eliminado de favoritos', 'error');
-    } else {
-        favorites.push(productId);
-        button.classList.add('favorited');
-        showToast('Producto añadido a favoritos', 'success');
-    }
-    localStorage.setItem('favorites', JSON.stringify(favorites));
-}
-
-// Inicializar favoritos al cargar la página
-document.addEventListener('DOMContentLoaded', () => {
-    document.querySelectorAll('.favorite-button').forEach(button => {
-        const productId = parseInt(button.id.replace('favorite-', ''));
-        if (favorites.includes(productId)) {
-            button.classList.add('favorited');
-        }
+    const productPromises = cart.map(productId => {
+        return fetch(`/api/products/${productId}/`)
+            .then(response => response.json())
+            .catch(() => null);
     });
+
+    Promise.all(productPromises).then(products => {
+        products.forEach(product => {
+            if (product) {
+                const item = document.createElement('div');
+                item.className = 'product';
+                item.innerHTML = `
+                    <img src="${product.imagen || '/static/images/placeholder.jpg'}" alt="${product.nombre}">
+                    <h4>${product.nombre}</h4>
+                    <p>Precio: $${product.precio}</p>
+                `;
+                cartItems.appendChild(item);
+                total += parseFloat(product.precio);
+            }
+        });
+
+        cartTotal.textContent = `Total: $${total.toFixed(2)}`;
+    });
+}
+
+// Vaciar Carrito
+document.getElementById('clear-cart')?.addEventListener('click', () => {
+    cart = [];
+    localStorage.setItem('cart', JSON.stringify(cart));
+    updateCartCount();
+    displayCart();
+    showToast('Carrito vaciado', 'success');
 });
 
-// Filtros y Búsqueda
-function applyFilters() {
-    const search = document.getElementById('search-input')?.value || '';
-    const categoria = document.getElementById('categoria-filter')?.value || '';
-    const especie = document.getElementById('especie-filter')?.value || '';
-    const sort = document.getElementById('sort-filter')?.value || '';
-
-    const params = new URLSearchParams();
-    if (search) params.set('search', search);
-    if (categoria) params.set('categoria', categoria);
-    if (especie) params.set('especie', especie);
-    if (sort) params.set('sort', sort);
-
-    window.location.href = `/products/?${params.toString()}`;
-}
-
-document.getElementById('search-input')?.addEventListener('input', applyFilters);
-document.getElementById('categoria-filter')?.addEventListener('change', applyFilters);
-document.getElementById('especie-filter')?.addEventListener('change', applyFilters);
-document.getElementById('sort-filter')?.addEventListener('change', applyFilters);
-
-// Vista Rápida
-function openQuickView(productId) {
-    fetch(`/api/productos/${productId}/`)
-        .then(response => response.json())
-        .then(data => {
-            const content = `
-                <img src="${data.imagen || '/static/images/placeholder.jpg'}" alt="${data.nombre}">
-                <h3>${data.nombre}</h3>
-                <p>${data.descripcion}</p>
-                <p>Categoría: ${data.categoria}</p>
-                <p>Especie: ${data.especie}</p>
-                <p>Precio: $${data.precio}</p>
-                <p>Stock: ${data.stock}</p>
-                <button onclick="addToCart(${data.id})">Añadir al Carrito</button>
-            `;
-            document.getElementById('quick-view-content').innerHTML = content;
-            document.getElementById('quick-view-modal').style.display = 'flex';
-        })
-        .catch(error => {
-            console.error('Error al cargar el producto:', error);
-            showToast('Error al cargar el producto', 'error');
-        });
-}
-
-function closeQuickView() {
-    document.getElementById('quick-view-modal').style.display = 'none';
-}
-
-// Compartir Producto
-function shareProduct(name, url) {
-    if (navigator.share) {
-        navigator.share({
-            title: `Mira este producto: ${name}`,
-            url: url
-        }).then(() => {
-            showToast('Producto compartido con éxito', 'success');
-        }).catch(error => {
-            console.error('Error al compartir:', error);
-            showToast('Error al compartir el producto', 'error');
-        });
-    } else {
-        navigator.clipboard.writeText(url).then(() => {
-            showToast('Enlace copiado al portapapeles', 'success');
-        }).catch(error => {
-            console.error('Error al copiar el enlace:', error);
-            showToast('Error al copiar el enlace', 'error');
-        });
-    }
-}
-
-// Notificaciones
-function showToast(message, type) {
-    const toast = document.createElement('div');
-    toast.className = `toast ${type}`;
-    toast.textContent = message;
-    document.getElementById('toast-container').appendChild(toast);
-    setTimeout(() => {
-        toast.remove();
-    }, 3000);
-}
-
-// Chatbot
-function toggleChatbot() {
-    const chatbotWindow = document.getElementById('chatbot-window');
-    chatbotWindow.style.display = chatbotWindow.style.display === 'block' ? 'none' : 'block';
-}
-
-function sendMessage() {
-    const input = document.getElementById('chatbot-input');
-    const message = input.value.trim();
-    if (!message) return;
-
-    // Añadir mensaje del usuario
-    const userMessage = document.createElement('div');
-    userMessage.className = 'chatbot-message user';
-    userMessage.textContent = message;
-    document.getElementById('chatbot-body').appendChild(userMessage);
-
-    // Limpiar input
-    input.value = '';
-
-    // Respuesta del bot
-    setTimeout(() => {
-        const botMessage = document.createElement('div');
-        botMessage.className = 'chatbot-message bot';
-        botMessage.textContent = getBotResponse(message);
-        document.getElementById('chatbot-body').appendChild(botMessage);
-
-        // Desplazar hacia abajo
-        const chatbotBody = document.getElementById('chatbot-body');
-        chatbotBody.scrollTop = chatbotBody.scrollHeight;
-    }, 500);
-}
-
-// Continuación desde getBotResponse
-function getBotResponse(message) {
-    message = message.toLowerCase();
-    if (message.includes('hola') || message.includes('buenos días') || message.includes('buenas tardes')) {
-        return '¡Hola! ¿En qué puedo ayudarte hoy?';
-    } else if (message.includes('productos') || message.includes('qué venden')) {
-        return 'Vendemos productos para el cuidado de animales, como alimentos, medicamentos y accesorios. Puedes ver todos nuestros productos en la sección de "Productos".';
-    } else if (message.includes('cita') || message.includes('veterinario')) {
-        return 'Puedes agendar una cita veterinaria en la sección de "Citas". Solo llena el formulario y te contactaremos para confirmar.';
-    } else if (message.includes('ubicación') || message.includes('dónde están')) {
-        return 'Estamos ubicados en Alcalá, Valle del Cauca. Puedes ver nuestra ubicación exacta en la sección de "Contacto".';
-    } else if (message.includes('horario') || message.includes('a qué hora abren')) {
-        return 'Abrimos de lunes a sábado de 8:00 AM a 6:00 PM. Los domingos estamos cerrados.';
-    } else if (message.includes('gracias') || message.includes('adiós')) {
-        return '¡De nada! Si necesitas más ayuda, aquí estaré. ¡Hasta pronto!';
-    } else {
-        return 'Lo siento, no entendí tu pregunta. ¿Puedes reformularla? También puedes visitar nuestras secciones de "Productos", "Citas" o "Contacto" para más información.';
-    }
-}
-
-// Carrusel de Imágenes
+// Carrusel
 let currentSlide = 0;
 const slides = document.querySelectorAll('.carousel-slide');
 const totalSlides = slides.length;
@@ -247,86 +109,297 @@ function prevSlide() {
     showSlide(currentSlide);
 }
 
-if (slides.length > 0) {
-    showSlide(currentSlide);
-    setInterval(nextSlide, 5000); // Cambia cada 5 segundos
-}
-
 document.getElementById('next-slide')?.addEventListener('click', nextSlide);
 document.getElementById('prev-slide')?.addEventListener('click', prevSlide);
 
-// Desplazamiento Suave
-document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-    anchor.addEventListener('click', function (e) {
-        e.preventDefault();
-        const targetId = this.getAttribute('href').substring(1);
-        const targetElement = document.getElementById(targetId);
-        if (targetElement) {
-            targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-    });
-});
+// Auto-slide
+if (totalSlides > 0) {
+    showSlide(currentSlide);
+    setInterval(nextSlide, 5000);
+}
 
-// Volver Arriba
-const backToTopButton = document.getElementById('back-to-top');
-window.addEventListener('scroll', () => {
-    if (window.scrollY > 300) {
-        backToTopButton.style.opacity = '1';
-        backToTopButton.classList.add('show');
+// Favoritos
+let favorites = JSON.parse(localStorage.getItem('favorites')) || [];
+
+function toggleFavorite(productId) {
+    const button = document.getElementById(`favorite-${productId}`);
+    if (favorites.includes(productId)) {
+        favorites = favorites.filter(id => id !== productId);
+        button.classList.remove('favorited');
+        showToast('Eliminado de favoritos', 'error');
     } else {
-        backToTopButton.style.opacity = '0';
-        backToTopButton.classList.remove('show');
+        favorites.push(productId);
+        button.classList.add('favorited');
+        showToast('Añadido a favoritos', 'success');
     }
-});
+    localStorage.setItem('favorites', JSON.stringify(favorites));
+}
 
-backToTopButton?.addEventListener('click', () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-});
+// Compartir Producto
+function shareProduct(name, url) {
+    if (navigator.share) {
+        navigator.share({
+            title: `Mira este producto: ${name}`,
+            url: url
+        }).catch(err => console.error('Error al compartir:', err));
+    } else {
+        navigator.clipboard.writeText(url).then(() => {
+            showToast('Enlace copiado al portapapeles', 'success');
+        });
+    }
+}
 
-// Reseñas de Productos
+// Vista Rápida
+function openQuickView(productId) {
+    fetch(`/api/products/${productId}/`)
+        .then(response => response.json())
+        .then(product => {
+            const modal = document.getElementById('quick-view-modal');
+            const content = document.getElementById('quick-view-content');
+            content.innerHTML = `
+                <img src="${product.imagen || '/static/images/placeholder.jpg'}" alt="${product.nombre}">
+                <h3>${product.nombre}</h3>
+                <p>${product.descripcion}</p>
+                <p>Categoría: ${product.categoria}</p>
+                <p>Especie: ${product.especie}</p>
+                <p>Precio: $${product.precio}</p>
+                <p>Stock: ${product.stock}</p>
+                <button onclick="addToCart(${product.id})">Añadir al Carrito</button>
+            `;
+            modal.style.display = 'flex';
+        })
+        .catch(err => {
+            console.error('Error al cargar el producto:', err);
+            showToast('Error al cargar el producto', 'error');
+        });
+}
+
+function closeQuickView() {
+    const modal = document.getElementById('quick-view-modal');
+    modal.style.display = 'none';
+}
+
+// Reseñas
+let reviews = JSON.parse(localStorage.getItem('reviews')) || {};
+
+function displayReviews(productId) {
+    const reviewContainer = document.getElementById(`reviews-${productId}`);
+    if (!reviewContainer) return;
+
+    reviewContainer.innerHTML = '';
+    const productReviews = reviews[productId] || [];
+    productReviews.forEach(review => {
+        const reviewElement = document.createElement('div');
+        reviewElement.className = 'review';
+        reviewElement.innerHTML = `
+            <p>Calificación: ${'★'.repeat(review.rating)}${'☆'.repeat(5 - review.rating)}</p>
+            <p>${review.comment}</p>
+        `;
+        reviewContainer.appendChild(reviewElement);
+    });
+}
+
 function submitReview(productId) {
     const rating = document.getElementById(`rating-${productId}`).value;
-    const comment = document.getElementById(`comment-${productId}`).value;
+    const comment = document.getElementById(`comment-${productId}`).value.trim();
 
     if (!rating || !comment) {
-        showToast('Por favor, completa todos los campos', 'error');
+        showToast('Por favor, completa la calificación y el comentario', 'error');
         return;
     }
 
-    // Simulación de envío de reseña (puedes integrarlo con una API)
-    const reviewList = document.getElementById(`reviews-${productId}`);
-    const review = document.createElement('div');
-    review.className = 'review';
-    review.innerHTML = `
-        <p><strong>Calificación:</strong> ${rating}/5</p>
-        <p>${comment}</p>
-        <hr>
-    `;
-    reviewList.appendChild(review);
+    if (!reviews[productId]) reviews[productId] = [];
+    reviews[productId].push({ rating: parseInt(rating), comment });
+    localStorage.setItem('reviews', JSON.stringify(reviews));
+    displayReviews(productId);
+    showToast('Reseña enviada', 'success');
 
-    // Limpiar formulario
     document.getElementById(`rating-${productId}`).value = '';
     document.getElementById(`comment-${productId}`).value = '';
-    showToast('Reseña enviada con éxito', 'success');
 }
 
-// Efecto de Fade-In al Hacer Scroll
-const observerOptions = {
-    root: null,
-    rootMargin: '0px',
-    threshold: 0.1
+// Filtros y Búsqueda
+function applyFilters() {
+    const searchInput = document.getElementById('search-input')?.value.toLowerCase() || '';
+    const categoriaFilter = document.getElementById('categoria-filter')?.value;
+    const especieFilter = document.getElementById('especie-filter')?.value;
+    const sortFilter = document.getElementById('sort-filter')?.value;
+
+    const url = new URL(window.location);
+    url.searchParams.set('search', searchInput);
+    url.searchParams.set('categoria', categoriaFilter || '');
+    url.searchParams.set('especie', especieFilter || '');
+    url.searchParams.set('sort', sortFilter || '');
+    window.location = url;
+}
+
+document.getElementById('search-input')?.addEventListener('input', applyFilters);
+document.getElementById('categoria-filter')?.addEventListener('change', applyFilters);
+document.getElementById('especie-filter')?.addEventListener('change', applyFilters);
+document.getElementById('sort-filter')?.addEventListener('change', applyFilters);
+
+// Toast Notifications
+function showToast(message, type) {
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    toast.textContent = message;
+    document.getElementById('toast-container').appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
+}
+
+// static/js/main.js
+// Funciones para el modal de autenticación
+function openModal(modalId) {
+    document.getElementById(modalId).style.display = 'flex';
+}
+
+function closeModal(modalId) {
+    document.getElementById(modalId).style.display = 'none';
+}
+
+// Cerrar el modal al hacer clic fuera de él
+window.onclick = function(event) {
+    const loginModal = document.getElementById('login-modal');
+    const registerModal = document.getElementById('register-modal');
+    if (event.target === loginModal) {
+        loginModal.style.display = 'none';
+    }
+    if (event.target === registerModal) {
+        registerModal.style.display = 'none';
+    }
 };
 
-const observer = new IntersectionObserver((entries, observer) => {
-    entries.forEach(entry => {
-        if (entry.isIntersecting) {
-            entry.target.classList.add('animate__animated', 'animate__fadeIn');
-            observer.unobserve(entry.target);
+// Funciones para el chatbot
+function toggleChatbot() {
+    const chatbotWindow = document.getElementById('chatbot-window');
+    chatbotWindow.style.display = chatbotWindow.style.display === 'block' ? 'none' : 'block';
+}
+
+// static/js/main.js (actualizar la función sendMessage)
+function sendMessage() {
+    const input = document.getElementById('chatbot-input');
+    const message = input.value.trim();
+    if (message === '') return;
+
+    const chatbotBody = document.getElementById('chatbot-body');
+    const userMessage = document.createElement('div');
+    userMessage.className = 'chatbot-message user';
+    userMessage.textContent = message;
+    chatbotBody.appendChild(userMessage);
+
+    // Mostrar un indicador de "escribiendo"
+    const typingIndicator = document.createElement('div');
+    typingIndicator.className = 'chatbot-message bot typing';
+    typingIndicator.textContent = 'Escribiendo...';
+    chatbotBody.appendChild(typingIndicator);
+
+    // Simular un retraso para el efecto de escritura
+    setTimeout(() => {
+        chatbotBody.removeChild(typingIndicator);
+        const botMessage = document.createElement('div');
+        botMessage.className = 'chatbot-message bot';
+        botMessage.textContent = getBotResponse(message);
+        chatbotBody.appendChild(botMessage);
+
+        // Desplazar el chat hacia abajo
+        chatbotBody.scrollTop = chatbotBody.scrollHeight;
+    }, 1000); // Retraso de 1 segundo
+
+    // Limpiar el input
+    input.value = '';
+}
+
+
+function getBotResponse(message) {
+    message = message.toLowerCase();
+
+    // Respuestas basadas en palabras clave
+    if (message.includes('hola') || message.includes('buenos días') || message.includes('buenas tardes')) {
+        return '¡Hola! ¿En qué puedo ayudarte hoy?';
+    } else if (message.includes('cita') || message.includes('turno') || message.includes('agendar')) {
+        return 'Puedes programar una cita en la sección "Citas". ¿Necesitas ayuda con el formulario?';
+    } else if (message.includes('producto') || message.includes('artículo') || message.includes('comprar')) {
+        return 'Tenemos productos para ganadería, porcicultura, avicultura y mascotas. Visita la sección "Productos" para ver más. ¿Buscas algo en particular?';
+    } else if (message.includes('precio') || message.includes('costo') || message.includes('cuánto')) {
+        return 'Los precios varían según el producto. Te recomiendo visitar la sección "Productos" para ver los detalles. ¿Hay algo específico que te interese?';
+    } else if (message.includes('horario') || message.includes('abren') || message.includes('cierran')) {
+        return 'Nuestro horario es de lunes a viernes de 8:00 AM a 6:00 PM, y los sábados de 9:00 AM a 2:00 PM. ¿Te gustaría agendar una cita?';
+    } else if (message.includes('ubicación') || message.includes('dónde están') || message.includes('dirección')) {
+        return 'Estamos ubicados en Alcalá, Valle del Cauca, Colombia. Puedes ver más detalles en la sección "Contacto". ¿Necesitas indicaciones?';
+    } else if (message.includes('contacto') || message.includes('teléfono') || message.includes('correo')) {
+        return 'Puedes contactarnos al +57 312 345 6789 o por correo a contacto@elgalpon.com. También puedes usar el formulario en la sección "Contacto". ¿En qué puedo ayudarte?';
+    } else if (message.includes('gracias') || message.includes('bye') || message.includes('adios')) {
+        return '¡De nada! Si necesitas algo más, aquí estaré. ¡Hasta pronto!';
+    } else if (message.includes('quién eres') || message.includes('qué eres')) {
+        return 'Soy el asistente virtual de El Galpón, una tienda veterinaria en Alcalá, Valle del Cauca. Estoy aquí para ayudarte con cualquier pregunta sobre nuestros productos, citas, o servicios. ¿En qué puedo ayudarte?';
+    } else if (message.includes('ayuda') || message.includes('necesito')) {
+        return '¡Claro que sí! Puedo ayudarte con citas, productos, horarios, o cualquier otra consulta. ¿Qué necesitas?';
+    } else {
+        // Respuesta predeterminada para preguntas no reconocidas
+        return 'Lo siento, no entendí tu pregunta. ¿Puedes reformularla? Estoy aquí para ayudarte con citas, productos, horarios, y más.';
+    }
+}
+// Back to Top Button
+window.addEventListener('scroll', () => {
+    const backToTop = document.getElementById('back-to-top');
+    if (window.scrollY > 300) {
+        backToTop.classList.add('show');
+    } else {
+        backToTop.classList.remove('show');
+    }
+});
+
+document.getElementById('back-to-top')?.addEventListener('click', () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+});
+
+// Inicializar
+document.addEventListener('DOMContentLoaded', () => {
+    displayCart();
+    document.querySelectorAll('[id^="favorite-"]').forEach(button => {
+        const productId = parseInt(button.id.split('-')[1]);
+        if (favorites.includes(productId)) {
+            button.classList.add('favorited');
         }
     });
-}, observerOptions);
-
-// Observar secciones y productos
-document.querySelectorAll('.section, .product').forEach(element => {
-    observer.observe(element);
+    document.querySelectorAll('[id^="reviews-"]').forEach(container => {
+        const productId = parseInt(container.id.split('-')[1]);
+        displayReviews(productId);
+    });
 });
+
+// static/js/main.js (añadir al final)
+// Inicializar el mapa
+function initMap() {
+    const location = { lat: 4.6747, lng: -75.7817 }; // Coordenadas de Alcalá, Valle del Cauca
+    const map = new google.maps.Map(document.getElementById("map"), {
+        zoom: 15,
+        center: location,
+    });
+    new google.maps.Marker({
+        position: location,
+        map: map,
+        title: "El Galpón",
+    });
+}
+
+// Mostrar el botón de volver arriba al hacer scroll
+window.onscroll = function() {
+    const backToTop = document.getElementById('back-to-top');
+    if (document.body.scrollTop > 100 || document.documentElement.scrollTop > 100) {
+        backToTop.style.display = 'block';
+    } else {
+        backToTop.style.display = 'none';
+    }
+};
+
+// Volver arriba al hacer clic
+document.getElementById('back-to-top').onclick = function() {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+};
+
+// Ocultar el loader cuando la página esté cargada
+window.onload = function() {
+    const loader = document.getElementById('loader');
+    loader.classList.add('hidden');
+};

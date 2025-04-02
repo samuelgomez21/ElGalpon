@@ -1,42 +1,12 @@
 # store/forms.py
 from django import forms
-from .models import CitaVeterinaria, Cliente
+from .models import CitaVeterinaria
 from django.core.exceptions import ValidationError
 import datetime
+from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
+from django.contrib.auth.models import User
 
 class CitaVeterinariaForm(forms.ModelForm):
-    cliente_nombre = forms.CharField(
-        max_length=255,
-        label="Nombre del Cliente",
-        error_messages={
-            'required': 'Por favor, ingresa el nombre del cliente.',
-            'max_length': 'El nombre del cliente no puede exceder los 255 caracteres.'
-        }
-    )
-    cliente_telefono = forms.CharField(
-        max_length=20,
-        required=False,
-        label="Teléfono del Cliente",
-        error_messages={
-            'max_length': 'El teléfono no puede exceder los 20 caracteres.'
-        }
-    )
-    cliente_email = forms.EmailField(
-        required=False,
-        label="Correo Electrónico del Cliente",
-        error_messages={
-            'invalid': 'Por favor, ingresa un correo electrónico válido.'
-        }
-    )
-    cliente_direccion = forms.CharField(
-        widget=forms.Textarea,
-        required=False,
-        label="Dirección del Cliente",
-        error_messages={
-            'max_length': 'La dirección no puede exceder los 255 caracteres.'
-        }
-    )
-
     class Meta:
         model = CitaVeterinaria
         fields = ['fecha_hora', 'motivo']
@@ -66,38 +36,21 @@ class CitaVeterinariaForm(forms.ModelForm):
                 raise ValidationError('La fecha y hora de la cita no puede ser en el pasado.')
         return fecha_hora
 
-    def clean(self):
-        cleaned_data = super().clean()
-        email = cleaned_data.get('cliente_email')
-        nombre = cleaned_data.get('cliente_nombre')
+class UserRegisterForm(UserCreationForm):
+    email = forms.EmailField(required=True, label="Correo Electrónico")
+    first_name = forms.CharField(max_length=150, required=True, label="Nombre")
+    telefono = forms.CharField(max_length=20, required=False, label="Teléfono")
+    direccion = forms.CharField(widget=forms.Textarea, required=False, label="Dirección")
 
-        if email:
-            # Verificar si ya existe un cliente con este email
-            existing_client = Cliente.objects.filter(email=email).exclude(nombre=nombre).first()
-            if existing_client:
-                raise ValidationError(
-                    f"Ya existe un cliente con el correo {email}. Por favor, usa un correo diferente o verifica el nombre."
-                )
-        return cleaned_data
+    class Meta:
+        model = User
+        fields = ['username', 'first_name', 'email', 'telefono', 'direccion', 'password1', 'password2']
+        labels = {
+            'username': 'Nombre de usuario',
+            'password1': 'Contraseña',
+            'password2': 'Confirmar contraseña',
+        }
 
-    def save(self, commit=True):
-        # Buscar cliente por nombre y email (si se proporciona)
-        email = self.cleaned_data.get('cliente_email')
-        cliente = None
-        if email:
-            cliente = Cliente.objects.filter(nombre=self.cleaned_data['cliente_nombre'], email=email).first()
-        if not cliente:
-            cliente = Cliente.objects.filter(nombre=self.cleaned_data['cliente_nombre'], email__isnull=True).first()
-        if not cliente:
-            cliente = Cliente.objects.create(
-                nombre=self.cleaned_data['cliente_nombre'],
-                telefono=self.cleaned_data['cliente_telefono'],
-                email=email if email else None,
-                direccion=self.cleaned_data['cliente_direccion'],
-            )
-
-        cita = super().save(commit=False)
-        cita.cliente = cliente
-        if commit:
-            cita.save()
-        return cita
+class UserLoginForm(AuthenticationForm):
+    username = forms.CharField(label="Nombre de usuario")
+    password = forms.CharField(widget=forms.PasswordInput, label="Contraseña")

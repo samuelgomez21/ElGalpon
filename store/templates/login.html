@@ -1,0 +1,15 @@
+<!-- store/templates/login.html -->
+{% extends 'base.html' %}
+
+{% block title %}Iniciar Sesión{% endblock %}
+
+{% block content %}
+<section class="section">
+    <h2>Iniciar Sesión</h2>
+    <form method="POST" class="appointment-form">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="cta-button">Iniciar Sesión</button>
+    </form>
+</section>
+{% endblock %}

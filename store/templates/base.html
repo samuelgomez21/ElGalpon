@@ -6,12 +6,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}El Galpón{% endblock %}</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <link rel="icon" type="image/png" href="{% static 'images/favicon.png' %}"> <!-- Añade un favicon si tienes uno -->
 </head>
 <body>
-    <div id="loader" class="loader"></div>
+    <div id="loader" class="loader">
+        <div class="spinner"></div>
+    </div>
     <header>
         <nav>
             <div class="nav-left">
@@ -24,6 +26,13 @@
                 <a href="{% url 'appointments' %}">Citas</a>
                 <a href="{% url 'about' %}">Sobre Nosotros</a>
                 <a href="{% url 'contact' %}">Contacto</a>
+                {% if user.is_authenticated %}
+                    <span>Hola, {{ user.first_name }}!</span>
+                    <a href="{% url 'logout' %}" class="auth-button">Cerrar Sesión</a>
+                {% else %}
+                    <a href="#" class="auth-button" onclick="openModal('login-modal')">Iniciar Sesión</a>
+                    <a href="#" class="auth-button" onclick="openModal('register-modal')">Registrarse</a>
+                {% endif %}
                 <label class="switch">
                     <input type="checkbox" id="theme-switch">
                     <span class="slider"></span>
@@ -31,7 +40,47 @@
             </div>
         </nav>
     </header>
+
+    <!-- Modal de Inicio de Sesión -->
+    <div id="login-modal" class="auth-modal">
+        <div class="auth-modal-content">
+            <span class="close-modal" onclick="closeModal('login-modal')">×</span>
+            <h4>Iniciar Sesión</h4>
+            <form method="POST" action="{% url 'login' %}" class="auth-form">
+                {% csrf_token %}
+                <input type="text" name="username" placeholder="Nombre de usuario" required>
+                <input type="password" name="password" placeholder="Contraseña" required>
+                <button type="submit" class="cta-button">Iniciar Sesión</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal de Registro -->
+    <div id="register-modal" class="auth-modal">
+        <div class="auth-modal-content">
+            <span class="close-modal" onclick="closeModal('register-modal')">×</span>
+            <h4>Registrarse</h4>
+            <form method="POST" action="{% url 'register' %}" class="auth-form">
+                {% csrf_token %}
+                <input type="text" name="username" placeholder="Nombre de usuario" required>
+                <input type="text" name="first_name" placeholder="Nombre" required>
+                <input type="email" name="email" placeholder="Correo Electrónico" required>
+                <input type="text" name="telefono" placeholder="Teléfono">
+                <textarea name="direccion" placeholder="Dirección"></textarea>
+                <input type="password" name="password1" placeholder="Contraseña" required>
+                <input type="password" name="password2" placeholder="Confirmar contraseña" required>
+                <button type="submit" class="cta-button">Registrarse</button>
+            </form>
+        </div>
+    </div>
+
     <main>
+        <!-- Mostrar mensajes de éxito/error -->
+        {% if messages %}
+            {% for message in messages %}
+                <div class="toast {{ message.tags }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
         {% block content %}
         {% endblock %}
     </main>
@@ -51,14 +100,15 @@
         <button class="chatbot-button" onclick="toggleChatbot()">💬</button>
         <div class="chatbot-window" id="chatbot-window">
             <div class="chatbot-header">Asistente Virtual</div>
-            <div class="chatbot-body" id="chatbot-body"></div>
+            <div class="chatbot-body" id="chatbot-body">
+                <div class="chatbot-message bot">¡Hola! ¿En qué puedo ayudarte hoy?</div>
+            </div>
             <div class="chatbot-footer">
                 <input type="text" id="chatbot-input" placeholder="Escribe tu mensaje..." onkeypress="if(event.key === 'Enter') sendMessage()">
                 <button onclick="sendMessage()">Enviar</button>
             </div>
         </div>
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
     <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&callback=initMap" async defer></script>
     <script src="{% static 'js/main.js' %}"></script>
 </body>

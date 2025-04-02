@@ -36,8 +36,8 @@ ROOT_URLCONF = 'marketplace.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
-        'APP_DIRS': True,
+        'DIRS': [BASE_DIR / 'templates'],  # Directorio global de templates (opcional)
+        'APP_DIRS': True,  # Esto permite que Django busque templates en store/templates/
         'OPTIONS': {
             'context_processors': [
                 'django.template.context_processors.debug',
@@ -48,7 +48,6 @@ TEMPLATES = [
         },
     },
 ]
-
 WSGI_APPLICATION = 'marketplace.wsgi.application'
 
 DATABASES = {
@@ -90,5 +89,13 @@ STATICFILES_DIRS = [BASE_DIR / "static"]
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+
+LOGIN_REDIRECT_URL = 'index'  # Redirige a la página principal después de iniciar sesión
+LOGOUT_REDIRECT_URL = 'index'  # Redirige a la página principal después de cerrar sesión
+LOGIN_URL = 'login'
+
+# settings.py
+SESSION_ENGINE = 'django.contrib.sessions.backends.file'
+SESSION_FILE_PATH = BASE_DIR / 'sessions'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

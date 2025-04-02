@@ -1,16 +1,18 @@
 # store/views.py
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.http import JsonResponse
 from rest_framework import viewsets
-from .models import Producto, CitaVeterinaria
+from .models import Producto, CitaVeterinaria, Cliente
 from .serializers import ProductoSerializer
-from .forms import CitaVeterinariaForm
+from .forms import CitaVeterinariaForm, UserRegisterForm, UserLoginForm  # Importamos los formularios aquí
 from django.db.models import Q
 from django.core.paginator import Paginator
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 
 # Vistas HTML
 def index(request):
-    # Obtener los 4 productos más recientes como destacados
     productos_destacados = Producto.objects.all().order_by('-id')[:4]
     return render(request, 'index.html', {
         'productos_destacados': productos_destacados
@@ -74,17 +76,34 @@ def products(request):
 def cart(request):
     return render(request, 'cart.html')
 
+@login_required
 def appointments(request):
     if request.method == 'POST':
         form = CitaVeterinariaForm(request.POST)
         if form.is_valid():
-            form.save()
+            # Buscar el cliente asociado al usuario autenticado
+            try:
+                cliente = Cliente.objects.get(user=request.user)
+            except Cliente.DoesNotExist:
+                # Si no existe un cliente asociado, creamos uno
+                cliente = Cliente.objects.create(
+                    user=request.user,
+                    nombre=request.user.first_name,
+                    email=request.user.email,
+                    telefono='',  # Puedes ajustar esto si tienes un campo en el formulario de registro
+                    direccion=''  # Puedes ajustar esto si tienes un campo en el formulario de registro
+                )
+
+            cita = form.save(commit=False)
+            cita.cliente = cliente
+            cita.save()
+
             if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
                 return JsonResponse({'success': True})
             return render(request, 'appointments.html', {
                 'form': CitaVeterinariaForm(),
                 'success': True,
-                'appointments': CitaVeterinaria.objects.all()
+                'appointments': CitaVeterinaria.objects.filter(cliente__user=request.user)
             })
         else:
             if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
@@ -92,13 +111,13 @@ def appointments(request):
             return render(request, 'appointments.html', {
                 'form': form,
                 'success': False,
-                'appointments': CitaVeterinaria.objects.all()
+                'appointments': CitaVeterinaria.objects.filter(cliente__user=request.user)
             })
     else:
         form = CitaVeterinariaForm()
     return render(request, 'appointments.html', {
         'form': form,
-        'appointments': CitaVeterinaria.objects.all()
+        'appointments': CitaVeterinaria.objects.filter(cliente__user=request.user)
     })
 
 def about(request):
@@ -106,6 +125,42 @@ def about(request):
 
 def contact(request):
     return render(request, 'contact.html')
+
+# Vistas de autenticación
+def register(request):
+    if request.method == 'POST':
+        form = UserRegisterForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            Cliente.objects.create(
+                user=user,
+                nombre=form.cleaned_data['first_name'],
+                email=form.cleaned_data['email'],
+                telefono=form.cleaned_data['telefono'],
+                direccion=form.cleaned_data['direccion']
+            )
+            login(request, user)
+            messages.success(request, '¡Registro exitoso! Bienvenido.')
+            return redirect('index')
+    else:
+        form = UserRegisterForm()
+    return render(request, 'register.html', {'form': form})
+
+def login_user(request):
+    if request.method == 'POST':
+        form = UserLoginForm(data=request.POST)
+        if form.is_valid():
+            user = form.get_user()
+            login(request, user)
+            messages.success(request, '¡Inicio de sesión exitoso!')
+            return redirect('index')
+    else:
+        form = UserLoginForm()
+    return render(request, 'login.html', {'form': form})
+def logout_user(request):
+    logout(request)
+    messages.success(request, '¡Has cerrado sesión!')
+    return redirect('index')
 
 # Vistas API
 class ProductoViewSet(viewsets.ModelViewSet):

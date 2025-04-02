@@ -1,8 +1,10 @@
 # store/models.py
 from django.db import models
+from django.contrib.auth.models import User  # Importamos el modelo User
 
 class Cliente(models.Model):
     id = models.AutoField(primary_key=True)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, null=True, blank=True)  # Relación con User
     nombre = models.CharField(max_length=255)
     telefono = models.CharField(max_length=20, null=True, blank=True)
     email = models.EmailField(unique=True, null=True, blank=True)

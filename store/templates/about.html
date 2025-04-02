@@ -1,34 +1,17 @@
 <!-- store/templates/about.html -->
 {% extends 'base.html' %}
-
-{% block title %}Sobre Nosotros{% endblock %}
-
+{% block title %}Sobre Nosotros - El Galpón{% endblock %}
 {% block content %}
 <section class="section">
     <h2>Sobre Nosotros</h2>
-    <p>En <strong>El Galpón</strong>, nos dedicamos a ofrecer productos y servicios de alta calidad para el cuidado de tus animales. Desde alimentos balanceados hasta servicios veterinarios, nuestro objetivo es garantizar la salud y el bienestar de tus mascotas y ganado.</p>
-
-    <img src="/static/images/about-team.jpg" alt="Nuestro equipo" class="about-image animate__animated animate__fadeIn">
-
-    <h3>Nuestra Historia</h3>
-    <p>Fundado en 2010 en Alcalá, Valle del Cauca, El Galpón nació de la pasión de una familia de ganaderos que buscaba soluciones integrales para el cuidado de sus animales. Lo que comenzó como una pequeña tienda local se ha convertido en un referente en la región, gracias a nuestro compromiso con la calidad y el servicio al cliente.</p>
-
-    <img src="/static/images/about-store.jpg" alt="Nuestra tienda" class="about-image animate__animated animate__fadeIn">
-
-    <h3>Misión</h3>
-    <p>Proveer productos y servicios que promuevan el bienestar animal, apoyando a los ganaderos, agricultores y amantes de las mascotas con soluciones confiables y sostenibles.</p>
-
-    <h3>Visión</h3>
-    <p>Ser la tienda líder en el Valle del Cauca y expandirnos a nivel nacional, reconocidos por nuestra excelencia en el cuidado animal y nuestro impacto positivo en las comunidades rurales.</p>
-
-    <h3>Valores</h3>
-    <ul>
-        <li><strong>Calidad:</strong> Ofrecemos solo los mejores productos y servicios.</li>
-        <li><strong>Compromiso:</strong> Estamos dedicados al bienestar de tus animales.</li>
-        <li><strong>Sostenibilidad:</strong> Promovemos prácticas responsables con el medio ambiente.</li>
-        <li><strong>Confianza:</strong> Construimos relaciones duraderas con nuestros clientes.</li>
-    </ul>
-
-    <p>Estamos ubicados en Alcalá, Valle del Cauca, y contamos con un equipo de profesionales apasionados por los animales. ¡Visítanos y descubre por qué somos la mejor opción para ti y tus animales!</p>
+    <div class="about-content">
+        <div class="about-text">
+            <p>Somos El Galpón, una tienda veterinaria dedicada al cuidado de tus animales en Alcalá, Valle del Cauca. Ofrecemos productos de alta calidad y servicios veterinarios para ganadería, porcicultura, avicultura y mascotas.</p>
+            <p>Nuestra misión es brindar soluciones integrales para el bienestar animal, con un equipo de profesionales comprometidos y apasionados.</p>
+        </div>
+        <div class="about-image">
+            <img src="{% static 'images/about-us.jpg' %}" alt="Sobre Nosotros">
+        </div>
+    </div>
 </section>
 {% endblock %}

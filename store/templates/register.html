@@ -1,0 +1,15 @@
+<!-- store/templates/register.html -->
+{% extends 'base.html' %}
+
+{% block title %}Registrarse{% endblock %}
+
+{% block content %}
+<section class="section">
+    <h2>Registrarse</h2>
+    <form method="POST" class="appointment-form">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="cta-button">Registrarse</button>
+    </form>
+</section>
+{% endblock %}
