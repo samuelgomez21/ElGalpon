@@ -1,13 +1,60 @@
 <!-- store/templates/cart.html -->
 {% extends 'base.html' %}
-
-{% block title %}Carrito de Compras{% endblock %}
-
+{% load static %}
+{% block title %}Carrito - El Galpón{% endblock %}
 {% block content %}
 <section class="section">
-    <h2>Tu Carrito de Compras</h2>
-    <div id="cart-items" class="product-grid"></div>
-    <p id="cart-total"></p>
-    <button id="clear-cart" class="cta-button">Vaciar Carrito</button>
+    <h2>Tu Carrito</h2>
+
+    <!-- Mostrar mensajes -->
+    {% if messages %}
+    <div class="messages">
+        {% for message in messages %}
+        <p class="{% if message.tags %}{{ message.tags }}{% endif %}">{{ message }}</p>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if cart_items %}
+    <div class="cart-table">
+        <table>
+            <thead>
+                <tr>
+                    <th>Producto</th>
+                    <th>Precio Unitario</th>
+                    <th>Cantidad</th>
+                    <th>Subtotal</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in cart_items %}
+                <tr>
+                    <td>{{ item.name }}</td>
+                    <td>${{ item.price }}</td>
+                    <td>
+                        <form method="post" action="{% url 'update_cart_quantity' item.id %}" class="quantity-form">
+                            {% csrf_token %}
+                            <button type="submit" name="action" value="decrease">-</button>
+                            <span>{{ item.quantity }}</span>
+                            <button type="submit" name="action" value="increase">+</button>
+                        </form>
+                    </td>
+                    <td>${{ item.subtotal }}</td>
+                    <td>
+                        <a href="{% url 'remove_from_cart' item.id %}" class="remove-button">Eliminar</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <div class="cart-total">
+            <h3>Total: ${{ total }}</h3>
+        </div>
+    </div>
+    {% else %}
+    <p>Tu carrito está vacío.</p>
+    <a href="{% url 'products' %}" class="cta-button">Volver a productos</a>
+    {% endif %}
 </section>
 {% endblock %}

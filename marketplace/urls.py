@@ -7,7 +7,7 @@ from django.conf.urls.static import static
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('store.urls')),  # Incluimos las URLs de la app 'store'
-]
+]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 # Configuración para servir archivos estáticos y de medios en desarrollo
 if settings.DEBUG:

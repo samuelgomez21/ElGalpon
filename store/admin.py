@@ -1,10 +1,10 @@
 # store/admin.py
 from django.contrib import admin
-from .models import Producto, CitaVeterinaria, Cliente, Empleado, Venta, DetalleVenta
+from .models import Product, CitaVeterinaria, Cliente, Empleado, Venta, DetalleVenta
 
-@admin.register(Producto)
-class ProductoAdmin(admin.ModelAdmin):
-    list_display = ('nombre', 'categoria', 'especie', 'precio', 'stock', 'fecha_ingreso')
+@admin.register(Product)
+class ProductAdmin(admin.ModelAdmin):
+    list_display = ['nombre', 'descripcion', 'imagen', 'precio']
     list_filter = ('categoria', 'especie')
     search_fields = ('nombre', 'descripcion')
     fields = ('nombre', 'categoria', 'especie', 'precio', 'stock', 'descripcion', 'imagen')

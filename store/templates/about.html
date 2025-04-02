@@ -1,17 +1,22 @@
 <!-- store/templates/about.html -->
 {% extends 'base.html' %}
+{% load static %}
 {% block title %}Sobre Nosotros - El Galpón{% endblock %}
 {% block content %}
 <section class="section">
     <h2>Sobre Nosotros</h2>
     <div class="about-content">
-        <div class="about-text">
-            <p>Somos El Galpón, una tienda veterinaria dedicada al cuidado de tus animales en Alcalá, Valle del Cauca. Ofrecemos productos de alta calidad y servicios veterinarios para ganadería, porcicultura, avicultura y mascotas.</p>
-            <p>Nuestra misión es brindar soluciones integrales para el bienestar animal, con un equipo de profesionales comprometidos y apasionados.</p>
+        <p>Somos El Galpón, una tienda veterinaria dedicada al cuidado de tus animales en Alcalá, Valle del Cauca. Ofrecemos productos de alta calidad y servicios veterinarios para ganadería, porcicultura, avicultura y más.</p>
+        <p>Nuestra misión es brindar soluciones integrales para el bienestar animal, con un equipo profesional y apasionado.</p>
+        <div class="about-team">
+            <h3>Nuestro Equipo</h3>
+            <p>Contamos con un equipo de veterinarios y especialistas comprometidos con la salud y el bienestar de tus animales.</p>
         </div>
-        <div class="about-image">
-            <img src="{% static 'images/about-us.jpg' %}" alt="Sobre Nosotros">
-        </div>
+        {% if static %}
+        <img src="{% static 'images/about-image.jpg' %}" alt="Sobre Nosotros" class="about-image">
+        {% else %}
+        <p>Imagen no disponible.</p>
+        {% endif %}
     </div>
 </section>
 {% endblock %}

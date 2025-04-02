@@ -1,20 +1,70 @@
 <!-- store/templates/products.html -->
 {% extends 'base.html' %}
+{% load static %}
 {% block title %}Productos - El Galpón{% endblock %}
 {% block content %}
 <section class="section">
-    <h2>Nuestros Productos</h2>
+    <h2>Productos</h2>
+
+    <!-- Mostrar mensajes -->
+    {% if messages %}
+    <div class="messages">
+        {% for message in messages %}
+        <p class="{% if message.tags %}{{ message.tags }}{% endif %}">{{ message }}</p>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Filtros -->
+    <form method="get" class="filter-form">
+        <div class="filter-group">
+            <label for="categoria">Categoría:</label>
+            <select name="categoria" id="categoria">
+                <option value="">Todas</option>
+                {% for categoria in categorias %}
+                <option value="{{ categoria }}" {% if selected_categoria == categoria %}selected{% endif %}>{{ categoria }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="filter-group">
+            <label for="especie">Especie:</label>
+            <select name="especie" id="especie">
+                <option value="">Todas</option>
+                {% for especie in especies %}
+                <option value="{{ especie }}" {% if selected_especie == especie %}selected{% endif %}>{{ especie }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="filter-group">
+            <label for="nombre">Nombre:</label>
+            <input type="text" name="nombre" id="nombre" value="{{ selected_nombre }}">
+        </div>
+        <div class="filter-group">
+            <label for="search">Búsqueda:</label>
+            <input type="text" name="search" id="search" value="{{ search_query }}">
+        </div>
+        <button type="submit" class="cta-button">Filtrar</button>
+    </form>
+
+    <!-- Lista de productos -->
     <div class="products-grid">
         {% for product in products %}
         <div class="product-card">
-            <img src="{{ product.image.url }}" alt="{{ product.name }}" class="product-image">
-            <h3>{{ product.name }}</h3>
-            <p>{{ product.description }}</p>
-            <p class="price">${{ product.price }}</p>
-            <button class="cta-button add-to-cart" data-id="{{ product.id }}">Añadir al Carrito</button>
+            {% if product.imagen %}
+            <img src="/media/{{ product.imagen }}" alt="{{ product.nombre }}" class="product-image">
+            {% else %}
+            <img src="{% static 'images/placeholder.jpg' %}" alt="Placeholder" class="product-image">
+            {% endif %}
+            <h3>{{ product.nombre }}</h3>
+            <p>{{ product.descripcion }}</p>
+            <p><strong>Categoría:</strong> {{ product.categoria }}</p>
+            <p><strong>Especie:</strong> {{ product.especie }}</p>
+            <p><strong>Precio:</strong> ${{ product.precio }}</p>
+            <p><strong>Stock:</strong> {{ product.stock }}</p>
+            <a href="{% url 'add_to_cart' product.id %}" class="cta-button">Añadir al carrito</a>
         </div>
         {% empty %}
-        <p>No hay productos disponibles.</p>
+        <p>No se encontraron productos.</p>
         {% endfor %}
     </div>
 </section>
